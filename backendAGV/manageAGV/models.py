@@ -24,7 +24,7 @@ class AGV(models.Model):
         return f"Vehicle ID: {self.vehicle_id}. Is active: {self.is_active}"
 
 class AGV_data(models.Model):
-    data_id = models.BigIntegerField(primary_key=True)
+    data_id = models.BigAutoField(primary_key=True)
     car_id = models.IntegerField()
     carSpeed = models.IntegerField()
     previousNode = models.IntegerField()
@@ -35,21 +35,50 @@ class AGV_data(models.Model):
    
 
 class AGVStates(models.Model):
-    state_id = models.IntegerField(primary_key=True)
+    state_id = models.BigAutoField(primary_key=True)
     carState = models.BooleanField(default=False)
     
 class DataSchedule(models.Model):
-    schedule_id=models.IntegerField(primary_key=True)
-    order_date=models.DateTimeField()
+    schedule_id=models.BigAutoField(primary_key=True)
+    order_date=models.DateTimeField(blank= True)
     order_number_id=models.IntegerField()
     load_name=models.CharField(max_length=255,default='Metal')
     load_weight=models.IntegerField(default=25)
     car_id=models.IntegerField()
-    est_start_time=models.TimeField()
-    est_end_time=models.TimeField()
+    est_start_time=models.TimeField(blank= True)
+    est_end_time=models.TimeField(blank= True)
     begin_node=models.IntegerField()
     destination_node=models.IntegerField()
     est_distance=models.IntegerField()
     est_energy=models.IntegerField(default=0)
     is_complete=models.BooleanField(default=False)
-   
+class orderData(models.Model):
+    request_id=models.BigAutoField(primary_key=True)
+    orderDate=models.DateTimeField(blank=True)
+    orderNumber=models.IntegerField(default=0)
+    loadName=models.CharField(max_length=255,default='Metal')
+    load_weight=models.IntegerField(default=25)
+    start_time=models.CharField(max_length=255,default='00:00')
+    startPoint=models.IntegerField(default=0)
+    endPoint=models.IntegerField(default=0)
+class DB_StationData(models.Model):
+    STATION_TYPE = (
+        ('HOME', 'Parking station'),
+        ('BAT', 'Charging station'),
+        ('PICK', 'Pick up'),
+        ('DROP', 'Drop') 
+        # TO ADD MORE CUZ I CANT THINK OF ANYTHING RN
+    )
+    LOAD_TRANSFER = (
+        ('AUTO', 'Automatic'),
+        ('MAN', 'Manual')
+    )
+    
+    station_id = models.IntegerField(primary_key= True, blank= False)
+    station_node = models.IntegerField(default= 0)
+    station_type = models.CharField(max_length=64, blank=True, choices= STATION_TYPE)
+    load_transfer = models.CharField(max_length=64, blank=True, choices= LOAD_TRANSFER)
+    is_active = models.BooleanField(default= False)
+
+    def __str__(self):
+        return "Station ID: {ID}".format(ID = self.station_id)

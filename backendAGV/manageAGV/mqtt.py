@@ -3,28 +3,28 @@ from django.conf import settings
 import json
 import math
 import time
-
-
-
-
-
-
-
+from datetime import datetime
 def on_connect(mqtt_client, userdata, flags, rc):
-   if rc == 0:
-       print('Connected MQTT successfully')
-       mqtt_client.subscribe('58kpuw3237/dataespsend')
-       mqtt_client.subscribe('58kpuw3237/datawebsend')
-   else:
-       print('Bad connection. Code:', rc)
-
+    if rc == 0:
+        print('Connected MQTT successfully')
+        mqtt_client.subscribe('58kpuw3237/dataespsend')
+        mqtt_client.subscribe('58kpuw3237/datawebsend')
+        # Đăng ký các chủ đề MQTT khác nếu cần
+    else:
+        print('Bad connection. Code:', rc)
 
 def on_message(mqtt_client, userdata, msg):
     print(f'Received message on topic: {msg.topic} with payload: {msg.payload}')
+    if msg.topic == '58kpuw3237/dataespsend':
+        handle_data_from_espsend(msg.payload)
+    elif msg.topic == '58kpuw3237/datawebsend':
+        handle_websend_topic(msg.payload)
+
+def handle_data_from_espsend(payload):
     from manageAGV.models import AGV_data
     try:
         # Chuyển đổi dữ liệu JSON thành đối tượng Python
-        data = json.loads(msg.payload)
+        data = json.loads(payload)
         
         # Tạo một đối tượng AGV_data mới từ dữ liệu JSON
         agv_data = AGV_data(
@@ -44,7 +44,35 @@ def on_message(mqtt_client, userdata, msg):
         print('Data saved successfully to the database.')
     except Exception as e:
         print('Error processing message:', e)
-    
+
+
+
+
+def handle_websend_topic(payload):
+    from manageAGV.models import orderData
+    try:
+        # Chuyển đổi dữ liệu JSON thành đối tượng Python
+        data = json.loads(payload)
+        current_time = datetime.now()
+        # Tạo một đối tượng orderData mới từ dữ liệu JSON
+        new_order = orderData(
+            
+            orderDate=current_time,
+            orderNumber=data.get('id'),
+            loadName=data.get('load_name', 'Metal'),  
+            load_weight=float(data.get('load_weight', 25)),  
+            start_time=data.get('start_time', '00:00'), 
+            startPoint=data.get('start_point', 0),  
+            endPoint=data.get('end_point', 0)  
+        )
+        
+        # Lưu đối tượng orderData vào cơ sở dữ liệu
+        new_order.save()
+        
+        print('Data saved successfully to the database.')
+    except Exception as e:
+        print('Error processing message:', e)
+
 
 #Connection to the client is established here
 client = mqtt.Client() #instantiating the mqtt client.
@@ -56,4 +84,3 @@ client.connect(
     port=settings.MQTT_PORT,
     keepalive=settings.MQTT_KEEPALIVE
 )
-
