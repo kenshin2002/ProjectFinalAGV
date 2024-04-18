@@ -33,13 +33,13 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'daphne',
     'rest_framework',
+    'manageAGV.apps.ManageagvConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'manageAGV',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +125,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MQTT_SERVER = 'b37.mqtt.one'
+MQTT_PORT = 1883
+MQTT_KEEPALIVE = 60
+MQTT_USER = '58kpuw3237'
+MQTT_PASSWORD = '23afijkqtv'
