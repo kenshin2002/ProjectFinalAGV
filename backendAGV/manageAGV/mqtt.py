@@ -14,6 +14,7 @@ def on_connect(mqtt_client, userdata, flags, rc):
    if rc == 0:
        print('Connected MQTT successfully')
        mqtt_client.subscribe('58kpuw3237/dataespsend')
+       mqtt_client.subscribe('58kpuw3237/datawebsend')
    else:
        print('Bad connection. Code:', rc)
 
