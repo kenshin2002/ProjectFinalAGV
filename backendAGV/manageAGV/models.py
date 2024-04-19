@@ -11,7 +11,7 @@ class AGV(models.Model):
         ('AUTO', 'Automatic'),
         ('MAN', 'Manual')
     )
-    vehicle_id = models.IntegerField(primary_key=True, blank=False)
+    vehicle_id = models.BigAutoField(primary_key=True, blank=False)
     vehicle_model = models.CharField(max_length=255, blank=True)  # Sửa đổi thành CharField
     maximum_battery = models.IntegerField(default=0)
     maximum_velocity = models.IntegerField(default=0)
