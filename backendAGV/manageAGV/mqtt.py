@@ -5,11 +5,13 @@ import math
 import time
 from datetime import datetime
 from django.utils import timezone
+from . import DjikStraAlgo
+DjikStraAlgo.initialize_map()
 def on_connect(mqtt_client, userdata, flags, rc):
     if rc == 0:
         print('Connected MQTT successfully')
         mqtt_client.subscribe('58kpuw3237/dataespsend')
-        mqtt_client.subscribe('58kpuw3237/datawebsend')
+        mqtt_client.subscribe('58kpuw3237/dataschedule')
         # Đăng ký các chủ đề MQTT khác nếu cần
     else:
         print('Bad connection. Code:', rc)
@@ -18,9 +20,9 @@ def on_message(mqtt_client, userdata, msg):
     print(f'Received message on topic: {msg.topic} with payload: {msg.payload}')
     if msg.topic == '58kpuw3237/dataespsend':
         handle_data_from_espsend(msg.payload)
-    elif msg.topic == '58kpuw3237/datawebsend':
+    elif msg.topic == '58kpuw3237/dataschedule':
         handle_websend_topic(msg.payload)
-
+    
 def handle_data_from_espsend(payload):
     from manageAGV.models import AGV_data
     try:
@@ -46,13 +48,9 @@ def handle_data_from_espsend(payload):
     except Exception as e:
         print('Error processing message:', e)
 
-
-
-
 def handle_websend_topic(payload):
  
     from manageAGV.models import orderData
-    from .schedule import startShe
     try:
         # Chuyển đổi dữ liệu JSON thành đối tượng Python
         data = json.loads(payload)
@@ -72,13 +70,27 @@ def handle_websend_topic(payload):
         
         # Lưu đối tượng orderData vào cơ sở dữ liệu
         new_order.save()
-        startShe()
+        startPoint=int(data.get('start_point', 0)) 
+        endPoint=int(data.get('end_point', 0))
+        shortest_path=DjikStraAlgo.dijkstra(startPoint,endPoint)
+        route_string = DjikStraAlgo.create_route(shortest_path,DjikStraAlgo.directions)
+        print("Route:", route_string)
+        data_to_publish = {
+         "AGV": "1",
+        "path": route_string  # Đường đã được tạo trước đó
+         }
+
+         # Chuyển đổi dữ liệu JSON thành chuỗi
+        json_string = json.dumps(data_to_publish)
+        
+        # Publish dữ liệu lên MQTT
+        client.publish('58kpuw3237/databackend', json_string)
         print('Data saved successfully to the database.')
     except Exception as e:
         print('Error processing message:', e)
 
 
-#Connection to the client is established here
+
 client = mqtt.Client() #instantiating the mqtt client.
 client.on_connect = on_connect
 client.on_message = on_message
@@ -89,3 +101,6 @@ client.connect(
     keepalive=settings.MQTT_KEEPALIVE
 )
 client.loop_start()
+
+
+    

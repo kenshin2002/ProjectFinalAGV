@@ -61,6 +61,7 @@ class orderData(models.Model):
     start_time=models.CharField(max_length=255,default='00:00')
     startPoint=models.IntegerField(default=0)
     endPoint=models.IntegerField(default=0)
+    isExecute=models.BooleanField(default=False)
 class DB_StationData(models.Model):
     STATION_TYPE = (
         ('HOME', 'Parking station'),
