@@ -1,22 +1,23 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from pytz import utc
 from datetime import datetime
-global_startTime = 0
-global_startPoint=0
-global_endPoint=0
+import pytz
+
 def FirstCronTest(start_time, start_point, end_point):
-    global global_startTime, global_startPoint, global_endPoint
-    global_startTime = start_time
-    global_startPoint= start_point
-    global_endPoint=end_point
     print("Công việc được thực hiện vào thời điểm:", start_time)
     print("Điểm bắt đầu:", start_point)
     print("Điểm kết thúc:", end_point)
 
-def startScheduler(start_time, start_point, end_point):
+def startScheduler(start_time_str, start_point, end_point):
+    # Chuyển chuỗi thời gian thành đối tượng datetime
+    start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
+    # Đặt múi giờ cho thời gian bắt đầu
+    start_time = pytz.timezone('Asia/Ho_Chi_Minh').localize(start_time)
+    
     scheduler = BackgroundScheduler()
-    scheduler.add_job(FirstCronTest, 'interval', seconds=30, args=[start_time, start_point, end_point])
+    # Sử dụng cron để lên lịch công việc
+    scheduler.add_job(FirstCronTest, 'cron', args=[start_time, start_point, end_point], year=start_time.year, month=start_time.month, day=start_time.day, hour=start_time.hour, minute=start_time.minute, second=start_time.second)
     scheduler.start()
 
 if __name__ == "__main__":
-     pass
+    # Test lên lịch khi chạy trực tiếp từ tệp script
+    pass
