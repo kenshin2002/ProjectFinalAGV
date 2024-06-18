@@ -59,6 +59,7 @@ def handle_websend_topic(payload):
         data = json.loads(payload)
         current_time = timezone.now()
         current_time_rounded = current_time.replace(microsecond=0)
+        schedule=data.get('schedule')
         # Tạo một đối tượng orderData mới từ dữ liệu JSON
         new_order = orderData(
             
@@ -82,7 +83,11 @@ def handle_websend_topic(payload):
         route_string = DjikStraAlgo.create_route(shortest_path,DjikStraAlgo.directions)
         print("Route:", route_string)
         AGVcar=int(data.get('AGV', 0))
-        startScheduler(start_time,route_string,AGVcar)
+        if schedule == '1':
+           startScheduler(start_time,route_string,AGVcar)
+        else:
+            myJob(route_string,AGVcar)
+            print('publish successfully to the database.')
         print('Data saved successfully to the database.')
     except Exception as e:
         print('Error processing message:', e)
